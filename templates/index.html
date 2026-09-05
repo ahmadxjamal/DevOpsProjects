@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Usage Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <div class="container">
+
+        <header>
+            <h1>System Usage</h1>
+            <p>Real-time CPU, memory and disk monitoring</p>
+        </header>
+
+        <main class="dashboard">
+
+            <!-- CPU -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>CPU</h2>
+                        <span>Processor usage</span>
+                    </div>
+                    <div class="icon cpu-icon">CPU</div>
+                </div>
+
+                <div class="usage">
+                    <div class="percentage" id="cpu-percent">0%</div>
+                    <div class="progress">
+                        <div class="progress-bar cpu-bar" id="cpu-bar"></div>
+                    </div>
+                </div>
+
+                <div class="details">
+                    <span>CPU Cores</span>
+                    <strong id="cpu-cores">0</strong>
+                </div>
+            </div>
+
+            <!-- Memory -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>Memory</h2>
+                        <span>RAM usage</span>
+                    </div>
+                    <div class="icon memory-icon">RAM</div>
+                </div>
+
+                <div class="usage">
+                    <div class="percentage" id="memory-percent">0%</div>
+                    <div class="progress">
+                        <div class="progress-bar memory-bar" id="memory-bar"></div>
+                    </div>
+                </div>
+
+                <div class="details">
+                    <span>Used</span>
+                    <strong id="memory-used">0 GB</strong>
+                </div>
+
+                <div class="details">
+                    <span>Total</span>
+                    <strong id="memory-total">0 GB</strong>
+                </div>
+            </div>
+
+            <!-- Disk -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h2>Disk</h2>
+                        <span>Storage usage</span>
+                    </div>
+                    <div class="icon disk-icon">DISK</div>
+                </div>
+
+                <div class="usage">
+                    <div class="percentage" id="disk-percent">0%</div>
+                    <div class="progress">
+                        <div class="progress-bar disk-bar" id="disk-bar"></div>
+                    </div>
+                </div>
+
+                <div class="details">
+                    <span>Used</span>
+                    <strong id="disk-used">0 GB</strong>
+                </div>
+
+                <div class="details">
+                    <span>Free</span>
+                    <strong id="disk-free">0 GB</strong>
+                </div>
+
+                <div class="details">
+                    <span>Total</span>
+                    <strong id="disk-total">0 GB</strong>
+                </div>
+            </div>
+
+        </main>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            <span id="status-text">Connected</span>
+            <span class="updated">Last updated: <strong id="last-updated">--</strong></span>
+        </div>
+
+    </div>
+
+    <script>
+        async function updateUsage() {
+            try {
+                const response = await fetch("/usage");
+
+                if (!response.ok) {
+                    throw new Error("API request failed");
+                }
+
+                const data = await response.json();
+
+                // CPU
+                const cpu = data.cpu.usage_percent;
+                document.getElementById("cpu-percent").textContent =
+                    `${cpu.toFixed(1)}%`;
+
+                document.getElementById("cpu-bar").style.width =
+                    `${cpu}%`;
+
+                document.getElementById("cpu-cores").textContent =
+                    data.cpu.cores;
+
+                // Memory
+                const memory = data.memory.usage_percent;
+
+                document.getElementById("memory-percent").textContent =
+                    `${memory.toFixed(1)}%`;
+
+                document.getElementById("memory-bar").style.width =
+                    `${memory}%`;
+
+                document.getElementById("memory-used").textContent =
+                    `${data.memory.used_gb} GB`;
+
+                document.getElementById("memory-total").textContent =
+                    `${data.memory.total_gb} GB`;
+
+                // Disk
+                const disk = data.disk.usage_percent;
+
+                document.getElementById("disk-percent").textContent =
+                    `${disk.toFixed(1)}%`;
+
+                document.getElementById("disk-bar").style.width =
+                    `${disk}%`;
+
+                document.getElementById("disk-used").textContent =
+                    `${data.disk.used_gb} GB`;
+
+                document.getElementById("disk-free").textContent =
+                    `${data.disk.free_gb} GB`;
+
+                document.getElementById("disk-total").textContent =
+                    `${data.disk.total_gb} GB`;
+
+                // Status
+                document.getElementById("status-text").textContent =
+                    "Connected";
+
+                document.getElementById("last-updated").textContent =
+                    new Date().toLocaleTimeString();
+
+            } catch (error) {
+                console.error(error);
+
+                document.getElementById("status-text").textContent =
+                    "Connection failed";
+            }
+        }
+
+        // Initial update
+        updateUsage();
+
+        // Update every 2 seconds
+        setInterval(updateUsage, 2000);
+    </script>
+
+</body>
+
+</html>
